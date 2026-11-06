@@ -1210,12 +1210,20 @@ gtag('config', 'G-XXXXXXXXXX');
       color: var(--muted)
     }
 
-    /* Apply */
+    /* Apply
+       Sized so the whole form fits one laptop/desktop screen under the sticky
+       header: spacing scales with viewport height (vh) and is capped. */
+    .apply {
+      padding-top: clamp(32px, 6vh, 72px);
+      padding-bottom: clamp(40px, 7vh, 96px);
+      scroll-margin-top: 64px
+    }
+
     .apply .wrap {
       display: flex;
       flex-wrap: wrap;
       gap: 56px;
-      align-items: flex-start
+      align-items: center
     }
 
     .apply-copy {
@@ -1250,36 +1258,51 @@ gtag('config', 'G-XXXXXXXXXX');
       background: var(--paper);
       color: var(--ink);
       border-radius: 28px;
-      padding: clamp(24px, 3vw, 40px);
+      padding: clamp(20px, 3.4vh, 36px) clamp(20px, 2.6vw, 36px);
       display: flex;
       flex-direction: column;
-      gap: 20px
+      gap: 16px
+    }
+
+    .form #formFields {
+      gap: clamp(12px, 2vh, 18px)
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px
+      gap: clamp(10px, 1.6vh, 14px) 16px
     }
 
     .field {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       font-size: 14px;
       font-weight: 700
+    }
+
+    .field .err:empty {
+      display: none
     }
 
     .field input {
       font-weight: 400;
       font-size: 16px;
-      padding: 14px 16px;
+      padding: 10px 14px;
       border: 1.5px solid var(--ink);
-      border-radius: 14px;
+      border-radius: 12px;
       background: var(--white);
-      min-height: 50px;
+      min-height: clamp(42px, 5.6vh, 48px);
       color: var(--ink);
       width: 100%
+    }
+
+    /* Experience + "I shoot on" side by side */
+    .form-choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(12px, 2vh, 18px) 32px
     }
 
     .field input:focus {
@@ -1310,7 +1333,7 @@ gtag('config', 'G-XXXXXXXXXX');
       font-size: 14px;
       font-weight: 700;
       padding: 0;
-      margin-bottom: 10px
+      margin-bottom: 8px
     }
 
     .pills {
@@ -1322,8 +1345,8 @@ gtag('config', 'G-XXXXXXXXXX');
     .pill {
       font-weight: 500;
       font-size: 15px;
-      padding: 12px 20px;
-      min-height: 46px;
+      padding: 8px 18px;
+      min-height: clamp(40px, 5.2vh, 44px);
       border-radius: 999px;
       border: 1.5px solid var(--ink);
       background: var(--white);
@@ -1358,15 +1381,19 @@ gtag('config', 'G-XXXXXXXXXX');
     .consent-err {
       font-size: 13px;
       color: #B42318;
-      margin: -10px 0 0
+      margin: -8px 0 0
+    }
+
+    .consent-err:empty {
+      display: none
     }
 
     .submit {
       font-family: var(--display);
       font-weight: 700;
-      font-size: 20px;
-      min-height: 60px;
-      padding: 18px 28px;
+      font-size: 19px;
+      min-height: clamp(48px, 6.4vh, 56px);
+      padding: 12px 28px;
       width: 100%
     }
 
@@ -2056,7 +2083,7 @@ gtag('config', 'G-XXXXXXXXXX');
         </div>
 
         <form class="form" id="applyForm" novalidate>
-          <div id="formFields" class="stack" style="gap:20px">
+          <div id="formFields" class="stack">
             <div class="form-grid">
               <label class="field" data-field="name">Full name
                 <input type="text" name="full_name" autocomplete="name" placeholder="Your name" required>
@@ -2078,6 +2105,7 @@ gtag('config', 'G-XXXXXXXXXX');
               </label>
             </div>
 
+            <div class="form-choices">
             <fieldset>
               <legend>Experience</legend>
               <div class="pills" data-group="experience">
@@ -2094,6 +2122,7 @@ gtag('config', 'G-XXXXXXXXXX');
                 <button type="button" class="pill" aria-pressed="false" data-value="Both">Both</button>
               </div>
             </fieldset>
+            </div>
 
             <!-- Hidden values: selections + ad attribution -->
             <input type="hidden" name="experience" value="Fresher">
