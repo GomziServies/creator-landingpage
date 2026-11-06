@@ -393,19 +393,32 @@ gtag('config', 'G-XXXXXXXXXX');
       padding: 8px 14px
     }
 
+    /* Phone mockup + stickers.
+       --k    : overall scale of the phone and its stickers
+       --hang : how far stickers stick out past the phone (1 = full, 0 = flush)
+       The area reserves side padding equal to the largest sticker overhang,
+       so stickers never overlap the hero copy or get clipped at any width. */
     .phone-area {
-      flex: 1 1 360px;
+      --k: 1;
+      --hang: 1;
+      --overhang: calc(150px * var(--k) * var(--hang));
+      flex: 0 1 auto;
       min-width: 0;
       display: flex;
       justify-content: center;
-      padding: 0 0 24px;
-      margin-top: -10px
+      padding: 0 var(--overhang) 24px;
+      margin: -10px auto 0
     }
 
     .phone-box {
       position: relative;
+      flex: none;
       width: 300px;
-      height: 600px
+      height: 600px;
+      transform: scale(var(--k));
+      transform-origin: top center;
+      /* collapse the layout box to the scaled size (transform alone doesn't) */
+      margin: 0 calc((var(--k) - 1) * 150px) calc((var(--k) - 1) * 600px)
     }
 
     .phone {
@@ -440,6 +453,68 @@ gtag('config', 'G-XXXXXXXXXX');
       width: 100%;
       height: 100%;
       object-fit: cover
+    }
+
+    .phone-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .45) 0, rgba(0, 0, 0, 0) 18%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, .65) 100%)
+    }
+
+    .reel-sound {
+      position: absolute;
+      top: 56px;
+      right: 12px;
+      z-index: 2;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .55);
+      color: #F6F6F2;
+      cursor: pointer;
+      transition: background .2s
+    }
+
+    .reel-sound:hover {
+      background: rgba(0, 0, 0, .75)
+    }
+
+    .reel-sound:focus-visible {
+      outline: 2px solid var(--lime);
+      outline-offset: 2px
+    }
+
+    .reel-sound .ico-off,
+    .reel-sound.is-muted .ico-on {
+      display: none
+    }
+
+    .reel-sound.is-muted .ico-off {
+      display: block
+    }
+
+    /* pulse while sound is off, to invite a tap */
+    .reel-sound.is-muted {
+      background: var(--lime);
+      color: var(--ink);
+      animation: reelPulse 1.6s ease-out infinite
+    }
+
+    @keyframes reelPulse {
+      0% { box-shadow: 0 0 0 0 rgba(212, 255, 63, .7) }
+      100% { box-shadow: 0 0 0 14px rgba(212, 255, 63, 0) }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reel-sound.is-muted {
+        animation: none
+      }
     }
 
     .phone-top {
@@ -513,11 +588,13 @@ gtag('config', 'G-XXXXXXXXXX');
 
     .sticker-earn {
       top: 46px;
-      left: -96px;
+      left: 0;
       background: var(--lime);
       padding: 14px 18px;
       border-radius: 14px;
-      transform: rotate(-7deg)
+      white-space: nowrap;
+      /* overhang is a share of the sticker's own width, so it stays consistent */
+      transform: translateX(calc(var(--hang) * -60%)) rotate(-7deg)
     }
 
     .sticker-earn small {
@@ -543,11 +620,12 @@ gtag('config', 'G-XXXXXXXXXX');
 
     .sticker-code {
       top: 290px;
-      right: -84px;
+      right: 0;
       background: var(--coral);
       padding: 12px 16px;
       border-radius: 12px;
-      transform: rotate(6deg);
+      white-space: nowrap;
+      transform: translateX(calc(var(--hang) * 70%)) rotate(6deg);
       box-shadow: 0 8px 0 #0A0A0A
     }
 
@@ -567,11 +645,11 @@ gtag('config', 'G-XXXXXXXXXX');
 
     .sticker-hinglish {
       bottom: 138px;
-      left: -65px;
+      left: 0;
       background: var(--paper);
       padding: 12px 18px;
       border-radius: 999px;
-      transform: rotate(-4deg);
+      transform: translateX(calc(var(--hang) * -45%)) rotate(-4deg);
       box-shadow: 0 8px 0 #0A0A0A;
       font-family: var(--display);
       font-weight: 700;
@@ -1520,6 +1598,12 @@ gtag('config', 'G-XXXXXXXXXX');
       display: none
     }
 
+    @media (max-width: 1240px) {
+      .phone-area {
+        --hang: .6
+      }
+    }
+
     @media (max-width: 860px) {
       .site-header {
         padding: 10px var(--pad-x)
@@ -1558,21 +1642,8 @@ gtag('config', 'G-XXXXXXXXXX');
         display: none
       }
 
-      .phone-box {
-        transform: scale(.9);
-        transform-origin: top center
-      }
-
-      .sticker-earn {
-        left: -40px
-      }
-
-      .sticker-code {
-        right: -30px
-      }
-
-      .sticker-hinglish {
-        left: -30px
+      .phone-area {
+        --k: .9
       }
 
       .mobile-cta {
@@ -1600,6 +1671,11 @@ gtag('config', 'G-XXXXXXXXXX');
     }
 
     @media (max-width: 520px) {
+      .phone-area {
+        --k: .85;
+        --hang: .5
+      }
+
       .btn-training-download {
         width: 100%;
         margin-left: 0;
@@ -1609,21 +1685,9 @@ gtag('config', 'G-XXXXXXXXXX');
     }
 
     @media (max-width: 420px) {
-      .phone-box {
-        transform: scale(.8)
-      }
-
-      .sticker-earn {
-        left: -20px
-      }
-
-      .sticker-code {
-        right: -14px
-      }
-
-      .sticker-hinglish {
-        left: -10px;
-        font-size: 16px
+      .phone-area {
+        --k: .8;
+        --hang: .3
       }
 
       .faq-a p {
@@ -1695,15 +1759,26 @@ gtag('config', 'G-XXXXXXXXXX');
           </ul>
         </div>
 
-        <div class="phone-area" aria-hidden="true">
+        <div class="phone-area">
           <div class="phone-box">
             <div class="phone">
               <div class="phone-media">
-                <span>[ YOUR REEL HERE ]</span>
-                <!-- Replace with a real creator reel:
-              <video src="reel.mp4" autoplay muted loop playsinline poster="reel-poster.jpg"></video> -->
+                <video id="heroReel" src="Herosection_videro.mp4" autoplay loop playsinline preload="auto"
+                  aria-label="Creator reel"></video>
               </div>
-              <div class="phone-top">
+              <button type="button" class="reel-sound" id="reelSound" aria-label="Mute reel" aria-pressed="true">
+                <svg class="ico-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M11 5L6 9H2v6h4l5 4z" />
+                  <path d="M23 9l-6 6M17 9l6 6" />
+                </svg>
+                <svg class="ico-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M11 5L6 9H2v6h4l5 4z" />
+                  <path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
+                </svg>
+              </button>
+              <div class="phone-top" aria-hidden="true">
                 <span>Reels</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F6F6F2" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -1712,7 +1787,7 @@ gtag('config', 'G-XXXXXXXXXX');
                   <path d="M8 6l1.5-2h5L16 6" />
                 </svg>
               </div>
-              <div class="phone-actions">
+              <div class="phone-actions" aria-hidden="true">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F6F6F2" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
@@ -1730,14 +1805,14 @@ gtag('config', 'G-XXXXXXXXXX');
                   <path d="M6 3h12v18l-6-4-6 4z" />
                 </svg>
               </div>
-              <div class="phone-caption">
+              <div class="phone-caption" aria-hidden="true">
                 <div class="phone-user"><i></i><span>@yourhandle</span><small>Paid partnership</small></div>
                 <p>My morning routine ft. @gomzilifescience · code in bio</p>
               </div>
             </div>
-            <div class="sticker sticker-earn"><small>EARN UP TO</small><b>₹25,000<em>/mo*</em></b></div>
-            <div class="sticker sticker-code"><small>YOUR PROMO CODE</small><b>YOURNAME10</b></div>
-            <div class="sticker sticker-hinglish">Phone hai? Shuru karo.</div>
+            <div class="sticker sticker-earn" aria-hidden="true"><small>EARN UP TO</small><b>₹25,000<em>/mo*</em></b></div>
+            <div class="sticker sticker-code" aria-hidden="true"><small>YOUR PROMO CODE</small><b>YOURNAME10</b></div>
+            <div class="sticker sticker-hinglish" aria-hidden="true">Phone hai? Shuru karo.</div>
           </div>
         </div>
       </div>
@@ -2050,10 +2125,10 @@ gtag('config', 'G-XXXXXXXXXX');
             <b>Inquiry submitted!</b>
             <p>Thanks, <span id="successName">creator</span>! Your application reference is <span class="ref"
                 id="refNo">GCP-000000</span>.</p>
-            <p>We’ve pre-filled your application details on WhatsApp for our team at <strong>+91 88668 31280</strong>. If the chat didn’t open automatically, tap below:</p>
+            <p>We’ve pre-filled your application details on WhatsApp for our team. If the chat didn’t open automatically, tap below:</p>
             <a class="btn btn-ink" id="waDirectBtn" href="https://api.whatsapp.com/send?phone=918866831280" target="_blank" rel="noopener" style="justify-content:center;gap:10px">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.2-4.6A8 8 0 1 1 21 12z"/></svg>
-              <span>Send Message on WhatsApp (+91 88668 31280)</span>
+              <span>Send Message on WhatsApp</span>
             </a>
           </div>
         </form>
@@ -2421,6 +2496,72 @@ gtag('config', 'G-XXXXXXXXXX');
 
       /* ---------- Footer year ---------- */
       document.getElementById('year').textContent = new Date().getFullYear();
+
+      /* ---------- Hero reel: always-on audio, looping ----------
+         Browsers refuse autoplay with sound until the visitor interacts with
+         the page. So: try with sound immediately; if blocked, keep playing
+         muted and switch sound on at the first click / tap / key press. */
+      var reel = document.getElementById('heroReel');
+      var soundBtn = document.getElementById('reelSound');
+      if (reel) {
+        var gestureEvents = ['pointerdown', 'click', 'touchend', 'keydown'];
+        var userMuted = false; // true only when the visitor turned sound off via the button
+
+        var syncSoundBtn = function () {
+          if (!soundBtn) return;
+          var muted = reel.muted || reel.paused;
+          soundBtn.classList.toggle('is-muted', muted);
+          soundBtn.setAttribute('aria-pressed', String(!muted));
+          soundBtn.setAttribute('aria-label', muted ? 'Turn sound on' : 'Mute reel');
+        };
+
+        var stopListening = function () {
+          gestureEvents.forEach(function (t) { document.removeEventListener(t, enableSound, true); });
+        };
+
+        var playWithSound = function () {
+          reel.muted = false;
+          reel.volume = 1;
+          var p = reel.play();
+          if (p && p.then) {
+            p.then(stopListening).catch(function () {
+              // Sound blocked for now: play muted, retry on next interaction.
+              reel.muted = true;
+              reel.play().catch(function () {});
+              syncSoundBtn();
+            });
+          } else {
+            stopListening();
+          }
+          syncSoundBtn();
+        };
+
+        var enableSound = function (e) {
+          if (soundBtn && soundBtn.contains(e.target)) return; // button handles itself
+          if (userMuted) { stopListening(); return; }
+          if (reel.muted || reel.paused) playWithSound(); else stopListening();
+        };
+
+        gestureEvents.forEach(function (t) { document.addEventListener(t, enableSound, true); });
+
+        if (soundBtn) {
+          soundBtn.addEventListener('click', function () {
+            if (reel.muted || reel.paused) {
+              userMuted = false;
+              playWithSound();
+            } else {
+              userMuted = true;
+              reel.muted = true;
+              syncSoundBtn();
+            }
+          });
+        }
+
+        reel.addEventListener('volumechange', syncSoundBtn);
+        reel.addEventListener('play', syncSoundBtn);
+
+        playWithSound();
+      }
     })();
   </script>
 </body>
