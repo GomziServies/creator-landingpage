@@ -2293,8 +2293,8 @@ gtag('config', 'G-XXXXXXXXXX');
         <div class="stack apply-copy">
           <p class="label">06 / APPLY</p>
           <h2 class="h2">Your next reel could be a paid one.</h2>
-          <p class="lead">Deliver 30 Reels and 10 Posts a month, and earn up to ₹25,000/mo*. Fill this in, and we’ll
-            confirm on WhatsApp with your application number. Eligible creators are approved automatically.</p>
+          <p class="lead">Deliver 30 Reels and 10 Posts a month, and earn up to ₹25,000/mo*. Fill this in, and you’ll
+            get your application number instantly. Eligible creators are approved automatically.</p>
           <div class="privacy-note">
             <svg viewBox="0 0 24 24" fill="none" stroke="#D4FF3F" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round" aria-hidden="true">
@@ -2312,14 +2312,14 @@ gtag('config', 'G-XXXXXXXXXX');
                 <input type="text" name="full_name" autocomplete="name" placeholder="Your name" required>
                 <span class="err" aria-live="polite"></span>
               </label>
-              <label class="field" data-field="phone">WhatsApp number
+              <label class="field" data-field="phone">Contact number
                 <input type="tel" name="mobile" autocomplete="tel" inputmode="numeric" placeholder="+91 98765 43210"
                   required>
                 <span class="err" aria-live="polite"></span>
               </label>
-              <label class="field" data-field="insta">Instagram username
-                <input type="text" name="instagram" autocomplete="off" autocapitalize="off" placeholder="@yourhandle"
-                  required>
+              <label class="field" data-field="insta">Instagram profile link
+                <input type="text" name="instagram" autocomplete="off" autocapitalize="off" inputmode="url"
+                  placeholder="instagram.com/yourhandle" required>
                 <span class="err" aria-live="polite"></span>
               </label>
               <label class="field" data-field="city">City
@@ -2370,18 +2370,15 @@ gtag('config', 'G-XXXXXXXXXX');
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </button>
-            <p class="form-note">Your application inquiry is delivered directly to Gomzi Creator Support on WhatsApp (+91 88668 31280).</p>
+            <p class="consent-err" id="submitErr" role="alert" aria-live="polite"></p>
+            <p class="form-note">Your application goes straight to the Gomzi Creator Support team.</p>
           </div>
 
           <div class="success" id="success" role="status" tabindex="-1">
             <b>Inquiry submitted!</b>
             <p>Thanks, <span id="successName">creator</span>! Your application reference is <span class="ref"
                 id="refNo">GCP-000000</span>.</p>
-            <p>We’ve pre-filled your application details on WhatsApp for our team. If the chat didn’t open automatically, tap below:</p>
-            <a class="btn btn-ink" id="waDirectBtn" href="https://api.whatsapp.com/send?phone=918866831280" target="_blank" rel="noopener" style="justify-content:center;gap:10px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.2-4.6A8 8 0 1 1 21 12z"/></svg>
-              <span>Send Message on WhatsApp</span>
-            </a>
+            <p>Our creator team has received your application and will review your profile shortly. Keep your application number handy.</p>
           </div>
         </form>
       </div>
@@ -2471,9 +2468,10 @@ gtag('config', 'G-XXXXXXXXXX');
       'use strict';
 
       /* ---------- CONFIG ----------
-         FORM_ENDPOINT: your backend / n8n webhook / Supabase edge function URL.
-         Leave empty to run in demo mode (shows success without sending). */
-      var FORM_ENDPOINT = '';
+         FORM_ENDPOINT: Gomzi CRM API. Applications are saved there and show up in
+         CRM > Marketing > Creator Inquiries. */
+      // LOCAL TESTING. Before deploying, switch to: 'https://api.fggroup.in/public/v1/creator-inquiry'
+      var FORM_ENDPOINT = 'https://api.fggroup.in/public/v1/creator-inquiry';
 
       /* ---------- Tracking helper (Meta Pixel + GA4) ---------- */
       function track(name, params, fbStandard) {
@@ -2659,7 +2657,7 @@ gtag('config', 'G-XXXXXXXXXX');
 
         if (name.length < 2) { setError('name', 'Enter your full name.'); ok = false; } else setError('name');
         if (!/^[6-9]\d{9}$/.test(phone)) { setError('phone', 'Enter a valid 10-digit Indian mobile number.'); ok = false; } else setError('phone');
-        if (!/^[A-Za-z0-9._]{1,30}$/.test(insta)) { setError('insta', 'Enter your Instagram username, e.g. @yourhandle.'); ok = false; } else setError('insta');
+        if (!/^[A-Za-z0-9._]{1,30}$/.test(insta)) { setError('insta', 'Enter your Instagram profile link, e.g. instagram.com/yourhandle.'); ok = false; } else setError('insta');
         if (city.length < 2) { setError('city', 'Enter your city.'); ok = false; } else setError('city');
 
         var consentErr = document.getElementById('consentErr');
@@ -2686,75 +2684,57 @@ gtag('config', 'G-XXXXXXXXXX');
         if (!v) return;
 
         var btn = document.getElementById('submitBtn');
+        var submitErr = document.getElementById('submitErr');
+        var btnLabel = btn.firstChild.nodeValue;
+        submitErr.textContent = '';
         btn.disabled = true;
-        btn.firstChild.nodeValue = 'Connecting to WhatsApp… ';
-
-        var ref = 'GCP-' + String(Date.now()).slice(-6);
+        btn.firstChild.nodeValue = 'Submitting… ';
 
         var payload = {
-          reference: ref,
           full_name: v.name,
           mobile: '+91' + v.phone,
           instagram_username: v.insta,
-          instagram_url: 'https://instagram.com/' + v.insta,
           city: v.city,
           experience: form.experience.value,
           equipment: form.equipment.value,
           whatsapp_consent: true,
           terms_consent: true,
-          page_url: window.location.href,
-          submitted_at: new Date().toISOString()
+          page_url: window.location.href
         };
-        utmKeys.forEach(function (k) { payload[k] = form.querySelector('input[name="' + k + '"]').value || null; });
+        utmKeys.forEach(function (k) {
+          var val = form.querySelector('input[name="' + k + '"]').value;
+          if (val) payload[k] = val;
+        });
 
-        // Build pre-filled WhatsApp inquiry message (plain text, no emojis)
-        var waMessage =
-          "*New Creator Application - Gomzi Life Sciences*\n\n" +
-          "*Ref ID:* " + ref + "\n" +
-          "*Name:* " + v.name + "\n" +
-          "*Mobile:* +91 " + v.phone + "\n" +
-          "*Instagram:* @" + v.insta + " (https://instagram.com/" + v.insta + ")\n" +
-          "*City:* " + v.city + "\n" +
-          "*Experience:* " + form.experience.value + "\n" +
-          "*Shoots On:* " + form.equipment.value + "\n" +
-          "*Monthly Deliverables:* 30 Reels + 10 Posts\n\n" +
-          "Hello Gomzi Team, I want to apply for the Gomzi Creator Program and earn up to ₹25,000/month. Please review my profile!";
+        function fail(msg) {
+          btn.disabled = false;
+          btn.firstChild.nodeValue = btnLabel;
+          submitErr.textContent = msg || 'Could not submit your application. Please check your connection and try again.';
+        }
 
-        var waUrl = 'https://api.whatsapp.com/send?phone=918866831280&text=' + encodeURIComponent(waMessage);
-
-        function done() {
+        function done(ref) {
           document.getElementById('formFields').style.display = 'none';
           document.getElementById('successName').textContent = v.name.split(' ')[0];
           document.getElementById('refNo').textContent = ref;
-          var waBtn = document.getElementById('waDirectBtn');
-          if (waBtn) waBtn.href = waUrl;
           var s = document.getElementById('success');
           s.classList.add('show');
           s.focus();
           track('application_submitted', { experience: payload.experience, equipment: payload.equipment }, 'CompleteRegistration');
-
-          // Open WhatsApp directly
-          try {
-            var w = window.open(waUrl, '_blank');
-            if (!w || w.closed || typeof w.closed === 'undefined') {
-              window.location.href = waUrl;
-            }
-          } catch (err) {
-            window.location.href = waUrl;
-          }
         }
 
-        if (FORM_ENDPOINT) {
-          try {
-            fetch(FORM_ENDPOINT, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            }).catch(function () {});
-          } catch (e) {}
-        }
-
-        setTimeout(done, 350);
+        fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (json) {
+            if (res.ok && json && json.data && json.data.reference) return done(json.data.reference);
+            // network failures go to the .catch below; here the server answered with an error
+            if (res.status === 429) return fail('Too many attempts. Please try again in a few minutes.');
+            if (res.status === 400 && json && json.message) return fail(json.message);
+            fail('Something went wrong on our side. Please try again in a minute.');
+          });
+        }).catch(function () { fail(); });
       });
 
       /* ---------- Mobile sticky CTA: show after hero, hide at form ---------- */
